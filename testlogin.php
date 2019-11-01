@@ -26,7 +26,7 @@ require_once "config.php";
             if ($row[0]) {
                 $exist = TRUE;
                 $_SESSION['username'] = $_POST["username"];
-                header("Location: https://classdb.it.mtu.edu/group_projects/cs3141/classdb/TeamFreedomFlow/homepage.html");     // redirect to homepage
+                header("Location: https://classdb.it.mtu.edu/cs3141/TeamFreedomFlow/Freedom-Flow/homepage.php");     // redirect to homepage
                 exit;
             }
         }

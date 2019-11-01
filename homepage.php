@@ -190,49 +190,69 @@ footer {
 </div>
 
 <div class="row">
-
-
 <div class="left">
 <div class="fileMenu">Files
 <input type="text" id="search" onkeyup="search()" placeholder="Search..">
 </div>
-<button class="accordion">Java</button>
+<?php
+ if (mysqli_num_rows($result) > 0) {
+      $arraye = array();
+      $arraya = array();
+      $folderJson = array(array());
+      $arrayParm = array();
+      $arrayFetta = array();
+      $b = 0;
+      //While there are exams in the row, list the names and create buttons for them if they havent been taken yet.
+      while($row = mysqli_fetch_assoc($result)) {
+        $param_Tname = $row["fname"];
+        $sql1 = "SELECT name, snippit from files where fname = '$param_Tname'";
+        $result2 = mysqli_query($link, $sql1);
+        if($result2 != false){
+        $a = 0;
+?>
+<button class="accordion"><?php echo $param_Tname ?> </button>
 <div class ="panel2">
 <div class="tab">
 <?php
 
- if (mysqli_num_rows($result) > 0) { 
-      $arraye = array();
-      $arraya = array();
-      //While there are exams in the row, list the names and create buttons for them if they havent been taken yet.
-      while($row = mysqli_fetch_assoc($result)) {
-        $param_Tname = $row["fname"];
-        $sql1 = "SELECT name, snippit from files";
-        $result2 = mysqli_query($link, $sql1);
-        if($result2 != false){ 
-        $a = 0;
         if (mysqli_num_rows($result2) > 0) {
         while($row = mysqli_fetch_assoc($result2)) {
 	$arraye[$a] = $row["name"];
 	$arraya[$a] = $row["snippit"];
+	$arrayParm[$b] = $row["name"];
+	$arrayFetta[$b] = $row["snippit"];
+//	if( //tHe array where I am trying to store data does not exits
+	if(! (isset($incomingFolder))){
+	$incomingFolder = array($param_Tname => array('filename' => $row["name"], 'snippit' => $row["snippit"] ));
+	}
+	else{
+	$tempArray = array($param_Tname => array('filename' => $row["name"], 'snippit' => $row["snippit"] ));
+	$incomingFolder[$param_Tname][$a] = $tempArray;
+ 	}
 	$death = "'";
 	$taxes = "'";
 	$str = htmlentities($row["name"]);
-        echo'<button class="tablinks" onclick="openCity(event, '.$death.$str.$taxes.')">'.$row["name"].' </button>';
+        echo'<button class="tablinks" onclick="openCity(event, '.$death.$str.$b.$taxes.')">'.$row["name"].' </button>';
  	$a++; 
+	$b++;
         }
+	$folderJson = array_merge($folderJson, $incomingFolder);
       }
 	}
-	}
-	}
-?>
-  <button class="tablinks" onclick="openCity(event, 'Forloop')" id="defaultOpen">Forloop</button>
+?>	
+	
+ <!-- <button class="tablinks" onclick="openCity(event, 'Forloop')" id="defaultOpen">Forloop</button>
   <button class="tablinks" onclick="openCity(event, 'Quicksort')">Quicksort</button>
-  <button class="tablinks" onclick="openCity(event, 'Array')">Array</button>
+  <button class="tablinks" onclick="openCity(event, 'Array')">Array</button> -->
 </div>
 </div>
-
-<button class="accordion">File 2</button>
+<?php 
+}
+}
+// json_encode($folderJson);
+?>
+</div>
+<!--<button class="accordion">File 2</button>
 <div class="panel">
 </div>
 
@@ -240,12 +260,12 @@ footer {
 <div class="panel">
 </div>
 </div>
-
+-->
 <div class="right">
 <div class = "header">
 <h2>FreedomFlow</h2>
 </div>
-
+<!--
 <div id="Forloop" class="tabcontent">
   <h3>Forloop</h3>
 <pre>
@@ -254,18 +274,19 @@ footer {
    }
 </pre>
 </div>
-
+-->
 <?php
-for($i = 0; $i < count($arraye); $i++){
+
+for($i = 0; $i < count($arrayParm); $i++){
 ?>
-<div id = <?php echo $arraye[$i]; ?> class="tabcontent">
-<h3><?php echo $arraye[$i]; ?></h3>
+<div id = <?php echo $arrayParm[$i].$i; ?> class="tabcontent">
+<h3><?php echo $arrayParm[$i]; ?></h3>
 <pre>
-   <?php echo $arraya[$i];?>
+   <?php echo $arrayFetta[$i];?>
 </pre>
 </div>
 <?php }?>
-
+<!--
 <div id="Quicksort" class="tabcontent">
   <h3>Quicksort</h3>
  <pre>
@@ -290,7 +311,7 @@ System.out.println(cars[0]);
 // Outputs Volvo
 </pre>
 </div>
-
+-->
 </div>
 </div>
 
