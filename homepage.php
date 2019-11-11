@@ -12,7 +12,7 @@ $sql = "SELECT fname FROM folders";
 
 
 <html>
-<head>
+<head>	
 <title>Homepage</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,24 +20,26 @@ $sql = "SELECT fname FROM folders";
 * {
   box-sizing: border-box;
 }
+//Set up row flex so that there are two parts of the page
 .row {
   display: flex;
 }
-
+//The right side is where the code snipets are going along with their titles and information
 .right {
   flex: 65%;
   padding: 15px;
 }
+//The left side is where teh folders and searchbar are going
 .left {
   flex: 15%;
   padding: 15px 0;
 }
-
+//Topnav is the navigation bar at the top of the page, containg home, contact, about, and settings
 .topnav {
   overflow: hidden;
   background-color: #4e0066;
 }
-
+//Topnave a is the LEFT floating navigation buttons
 .topnav a {
   float: left;
   color: #f2f2f2;
@@ -46,17 +48,17 @@ $sql = "SELECT fname FROM folders";
   text-decoration: none;
   font-size: 17px;
 }
-
+//Change the color of the button when a mouse is hovering over it
 .topnav a:hover {
   background-color: #6EA4BF;
   color: black;
 }
-
+//When the button is activated, change it's color
 .topnav a.active {
   background-color: #41337A;
   color: white;
 }
-
+//Topnav B is the RIGHT floating buttons
 .topnav b {
   float: right;
   color: #f2f2f2;
@@ -113,6 +115,7 @@ $sql = "SELECT fname FROM folders";
   border-right:none;
   height: 300px;
 }
+/*Defining the style of the accordion*/
 .accordion {
   background-color: #eee;
   color: #444;
@@ -130,13 +133,14 @@ $sql = "SELECT fname FROM folders";
   background-color: #41337A;
   color: #ECFEE8; 
 }
-
+//Define the styling of a panel
 .panel {
   padding: 0 18px;
   display: none;
   background-color: #ECFEE8;
   overflow: hidden;
 }
+//Second panel that has diferent colors and padding
 .panel2 {
   padding: 0 12px;
   display: none;
@@ -158,7 +162,7 @@ body {
   font-size: 14px;
   color: gray;
 }
-
+/* Style the fileMenu */
 .fileMenu{
  background-color: #4E0066;
   padding: 18px;
@@ -166,7 +170,7 @@ body {
   font-size: 18px;
   color: white; 
 }
-
+/* Pre is used to get rid of whitespace in code snippets */
 pre{
 white-space: pre;
 }
@@ -181,28 +185,37 @@ footer {
 
 </style>
 </head>
+<!-- Set up the actual body of the page -->
 <body style= "background:#FFFCE8">
+
+<!-- Begin top navigation bar -->
 <div class="topnav">
+<!-- Left floating buttons -->
   <a class="active" href="#home">Home</a>
   <a href="#contact">Contact</a>
   <a href="#about">About</a>
+<!-- Right floating buttons -->
   <b href="#settings">Settings</b>
 </div>
+<!-- End top navigation bar-->
 
+<!-- Begin the row and flex elements -->
 <div class="row">
-<div class="left">
+
+<div class="left"><!--This is the left flex, which contains the folders and searchbar -->
 <div class="fileMenu">Files
 <input type="text" id="search" onkeyup="search()" placeholder="Search..">
 </div>
+
 <?php
- if (mysqli_num_rows($result) > 0) {
+ if (mysqli_num_rows($result) > 0) { //If there are rows in the original Mysql query, then set up arrays and find the files
       $arraye = array();
       $arraya = array();
       $folderJson = array(array());
       $arrayParm = array();
       $arrayFetta = array();
       $b = 0;
-      //While there are exams in the row, list the names and create buttons for them if they havent been taken yet.
+      /*While there are Folders in the row, get the information from them. */
       while($row = mysqli_fetch_assoc($result)) {
         $param_Tname = $row["fname"];
         $sql1 = "SELECT name, snippit from files where fname = '$param_Tname'";
@@ -210,37 +223,44 @@ footer {
         if($result2 != false){
         $a = 0;
 ?>
+<!-- Create the folder acordion -->
 <button class="accordion"><?php echo $param_Tname ?> </button>
 <div class ="panel2">
 <div class="tab">
 <?php
-
+	
         if (mysqli_num_rows($result2) > 0) {
         while($row = mysqli_fetch_assoc($result2)) {
+	/* These are the arrays that we use to create buttons with */ 
 	$arraye[$a] = $row["name"];
-	$arraya[$a] = $row["snippit"];
+	$arraya[$a] = $row["snippit"]; 
+	/* These are cheese arrays I am using to avoid problems */
 	$arrayParm[$b] = $row["name"];
 	$arrayFetta[$b] = $row["snippit"];
 //	if( //tHe array where I am trying to store data does not exits
+	
+	/* Work in progress to try and use JSON */
 	if(! (isset($incomingFolder))){
 	$incomingFolder = array($param_Tname => array('filename' => $row["name"], 'snippit' => $row["snippit"] ));
 	}
 	else{
 	$tempArray = array($param_Tname => array('filename' => $row["name"], 'snippit' => $row["snippit"] ));
 	$incomingFolder[$param_Tname][$a] = $tempArray;
- 	}
-	$death = "'";
+	/* Work in progess to use JSON*/
+	
+	/* Create the buttons to be called by openFile */
 	$taxes = "'";
 	$str = htmlentities($row["name"]);
-        echo'<button class="tablinks" onclick="openCity(event, '.$death.$str.$b.$taxes.')">'.$row["name"].' </button>';
+        echo'<button class="tablinks" onclick="openFile(event, '.$taxes.$str.$b.$taxes.')">'.$row["name"].' </button>';  /* Here the variable $b is to avoid non-unique names */
  	$a++; 
 	$b++;
         }
+	//More JSOn
 	$folderJson = array_merge($folderJson, $incomingFolder);
       }
 	}
 ?>	
-	
+<!-- Examples of how to create buttons for reference -->	
  <!-- <button class="tablinks" onclick="openCity(event, 'Forloop')" id="defaultOpen">Forloop</button>
   <button class="tablinks" onclick="openCity(event, 'Quicksort')">Quicksort</button>
   <button class="tablinks" onclick="openCity(event, 'Array')">Array</button> -->
@@ -252,71 +272,39 @@ footer {
 // json_encode($folderJson);
 ?>
 </div>
-<!--<button class="accordion">File 2</button>
-<div class="panel">
-</div>
 
-<button class="accordion">File 3</button>
+
+<!--
+Example of how to create an accordion for reference 
+<button class="accordion">File 2</button>
 <div class="panel">
-</div>
-</div>
--->
+</div>-->
+
+
+<!-- End left flex and mvoe to right side of the screen -->
 <div class="right">
 <div class = "header">
 <h2>FreedomFlow</h2>
 </div>
-<!--
-<div id="Forloop" class="tabcontent">
-  <h3>Forloop</h3>
-<pre>
-   for (int i = 0; i &lt; 5; i++) {
-     System.out.println(i);
-   }
-</pre>
-</div>
--->
 <?php
-
+//For each folder in the array 
 for($i = 0; $i < count($arrayParm); $i++){
 ?>
+<!-- make the content -->
 <div id = <?php echo $arrayParm[$i].$i; ?> class="tabcontent">
-<h3><?php echo $arrayParm[$i]; ?></h3>
+<h3><?php /*Name of snippet*/ echo $arrayParm[$i]; ?></h3> 
 <pre>
-   <?php echo $arrayFetta[$i];?>
+   <?php echo /* Snippet of snippet */ $arrayFetta[$i];?>
 </pre>
 </div>
 <?php }?>
-<!--
-<div id="Quicksort" class="tabcontent">
-  <h3>Quicksort</h3>
- <pre>
-	quickSort(arr[], low, high)
-	{
-	    if (low &lt; high)
-	    {
-        	/* pi is partitioning index, arr[pi] is now
-           	at right place */
-        	pi = partition(arr, low, high);
-        	quickSort(arr, low, pi - 1);  // Before pi
-     	 	quickSort(arr, pi + 1, high); // After pi
-    	    }
-	}
-</pre>
-</div>
 
-<div id="Array" class="tabcontent">
-  <h3>Array</h3>
-  <pre>String[] cars = {"Volvo", "BMW", "Ford", "Mazda"};
-System.out.println(cars[0]);
-// Outputs Volvo
-</pre>
-</div>
--->
 </div>
 </div>
 
 </div>
 <script>
+//Accordion script
 var acc = document.getElementsByClassName("accordion");
 var i;
 
@@ -331,7 +319,11 @@ for (i = 0; i < acc.length; i++) {
     }
   });
 }
-function openCity(evt, cityName) {
+/* Function openFile
+	takes in a filename and opens that file's content
+	while closing all of the other file's contents 
+*/
+function openFile(evt, fileName) {
   var i, tabcontent, tablinks;
   tabcontent = document.getElementsByClassName("tabcontent");
   for (i = 0; i < tabcontent.length; i++) {
@@ -341,7 +333,7 @@ function openCity(evt, cityName) {
   for (i = 0; i < tablinks.length; i++) {
     tablinks[i].className = tablinks[i].className.replace(" active", "");
   }
-  document.getElementById(cityName).style.display = "block";
+  document.getElementById(fileName).style.display = "block";
   evt.currentTarget.className += " active";
 }
 
@@ -357,6 +349,25 @@ var left= pre.querySelector('span').getClientRects()[0].left;
 
 //move the code to the left, taking into account the body's margin:
 pre.style.marginLeft= (-left + pre.getClientRects()[0].left)+'px';
+
+function searchbar() {
+  // Declare variables
+  var input, filter, ul, li, a, i;
+  input = document.getElementById("search");
+  filter = input.value.toUpperCase();
+  ul = document.getElementById("fileMenu");
+  li = ul.getElementsByClassName("accordian");
+
+  // Loop through all list items, and hide those who don't match the search query
+  for (i = 0; i < li.length; i++) {
+    a = li[i].getElementsByClassName("tabcontents")[0];
+    if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+      li[i].style.display = "";
+    } else {
+      li[i].style.display = "none";
+    }
+  }
+}
 </script>
 </body>
 </html>
