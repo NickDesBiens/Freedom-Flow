@@ -12,7 +12,7 @@ $sql = "SELECT fname FROM folders";
 
 
 <html>
-<head>	
+<head>
 <title>Homepage</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,26 +20,21 @@ $sql = "SELECT fname FROM folders";
 * {
   box-sizing: border-box;
 }
-//Set up row flex so that there are two parts of the page
 .row {
   display: flex;
 }
-//The right side is where the code snipets are going along with their titles and information
 .right {
   flex: 65%;
   padding: 15px;
 }
-//The left side is where teh folders and searchbar are going
 .left {
   flex: 15%;
   padding: 15px 0;
 }
-//Topnav is the navigation bar at the top of the page, containg home, contact, about, and settings
 .topnav {
   overflow: hidden;
   background-color: #4e0066;
 }
-//Topnave a is the LEFT floating navigation buttons
 .topnav a {
   float: left;
   color: #f2f2f2;
@@ -48,17 +43,14 @@ $sql = "SELECT fname FROM folders";
   text-decoration: none;
   font-size: 17px;
 }
-//Change the color of the button when a mouse is hovering over it
 .topnav a:hover {
   background-color: #6EA4BF;
   color: black;
 }
-//When the button is activated, change it's color
 .topnav a.active {
   background-color: #41337A;
   color: white;
 }
-//Topnav B is the RIGHT floating buttons
 .topnav b {
   float: right;
   color: #f2f2f2;
@@ -133,14 +125,14 @@ $sql = "SELECT fname FROM folders";
   background-color: #41337A;
   color: #ECFEE8; 
 }
-//Define the styling of a panel
+/*Define the styling of a panel */
 .panel {
   padding: 0 18px;
   display: none;
   background-color: #ECFEE8;
   overflow: hidden;
 }
-//Second panel that has diferent colors and padding
+/* Second panel that has diferent colors and padding */
 .panel2 {
   padding: 0 12px;
   display: none;
@@ -218,7 +210,7 @@ footer {
       /*While there are Folders in the row, get the information from them. */
       while($row = mysqli_fetch_assoc($result)) {
         $param_Tname = $row["fname"];
-        $sql1 = "SELECT name, snippit from files where fname = '$param_Tname'";
+        $sql1 = "SELECT name, snippit, recent from files where fname = '$param_Tname'";
         $result2 = mysqli_query($link, $sql1);
         if($result2 != false){
         $a = 0;
@@ -247,10 +239,11 @@ footer {
 	$tempArray = array($param_Tname => array('filename' => $row["name"], 'snippit' => $row["snippit"] ));
 	$incomingFolder[$param_Tname][$a] = $tempArray;
 	/* Work in progess to use JSON*/
-	
+	}	
 	/* Create the buttons to be called by openFile */
 	$taxes = "'";
 	$str = htmlentities($row["name"]);
+	$recent = 3;
         echo'<button class="tablinks" onclick="openFile(event, '.$taxes.$str.$b.$taxes.')">'.$row["name"].' </button>';  /* Here the variable $b is to avoid non-unique names */
  	$a++; 
 	$b++;
@@ -280,7 +273,6 @@ Example of how to create an accordion for reference
 <div class="panel">
 </div>-->
 
-
 <!-- End left flex and mvoe to right side of the screen -->
 <div class="right">
 <div class = "header">
@@ -292,9 +284,9 @@ for($i = 0; $i < count($arrayParm); $i++){
 ?>
 <!-- make the content -->
 <div id = <?php echo $arrayParm[$i].$i; ?> class="tabcontent">
-<h3><?php /*Name of snippet*/ echo $arrayParm[$i]; ?></h3> 
+<h3><?php echo $arrayParm[$i]; ?></h3> 
 <pre>
-   <?php echo /* Snippet of snippet */ $arrayFetta[$i];?>
+   <?php echo $arrayFetta[$i];?>
 </pre>
 </div>
 <?php }?>
@@ -368,6 +360,7 @@ function searchbar() {
     }
   }
 }
+
 </script>
 </body>
 </html>
