@@ -196,7 +196,7 @@ footer {
 
 <div class="left"><!--This is the left flex, which contains the folders and searchbar -->
 <div class="fileMenu">Files
-<input type="text" id="search" onkeyup="search()" placeholder="Search..">
+<input type="text" id="search" onkeyup = "searchbar()" placeholder="Search..">
 </div>
 
 <?php
@@ -243,9 +243,13 @@ footer {
 	/* Create the buttons to be called by openFile */
 	$taxes = "'";
 	$str = htmlentities($row["name"]);
-	$recent = 3;
-        echo'<button class="tablinks" onclick="openFile(event, '.$taxes.$str.$b.$taxes.')">'.$row["name"].' </button>';  /* Here the variable $b is to avoid non-unique names */
- 	$a++; 
+	if($row["recent"] > 0){
+        echo'<button class="tablinks" onclick="openFile(event, '.$taxes.$str.$b.$taxes.')" id="defaultOpen">'.$row["name"].' </button>';  /* Here the variable $b is to avoid non-unique names */
+ 	}else{
+	 echo'<button class="tablinks" onclick="openFile(event, '.$taxes.$str.$b.$taxes.')">'.$row["name"].' </button>';
+	
+	}
+	$a++; 
 	$b++;
         }
 	//More JSOn
@@ -330,7 +334,7 @@ function openFile(evt, fileName) {
 }
 
 // Get the element with id="defaultOpen" and click on it
-document.getElementById("defaultOpen").click();
+document.getElementById("defaultOpen").style.display = "block";
 var pre= document.querySelector('pre');
 
 //insert a span in front of the first letter.  (the span will automatically close.)
@@ -347,17 +351,31 @@ function searchbar() {
   var input, filter, ul, li, a, i;
   input = document.getElementById("search");
   filter = input.value.toUpperCase();
-  ul = document.getElementById("fileMenu");
-  li = ul.getElementsByClassName("accordian");
-
+  ul = document.getElementsByClassName("panel2");
   // Loop through all list items, and hide those who don't match the search query
-  for (i = 0; i < li.length; i++) {
-    a = li[i].getElementsByClassName("tabcontents")[0];
-    if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-      li[i].style.display = "";
-    } else {
-      li[i].style.display = "none";
-    }
+  for (j = 0; j < ul.length; j++) {
+    count = 0;
+    li = ul[j].getElementsByClassName("tablinks");
+    for(i = 0; i < li.length; i++){
+	a = li[i];
+  //  console.log(a.innerHTML.toUpperCase());
+        if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+          console.log("we good " + a.innerHTML);
+          li[i].style.display = "block"; 
+	  count++; 
+	} else { 
+	  li[i].style.display = "none";  
+	}
+      }
+      if( count > 0){
+        if( !(ul[j].previousElementSibling.classList.contains("active"))){
+          ul[j].previousElementSibling.click();
+	}
+      } else{
+	  if(ul[j].previousElementSibling.classList.contains("active")){
+	   ul[j].previousElementSibling.click();
+          }	
+	}
   }
 }
 
