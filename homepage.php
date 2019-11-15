@@ -1,11 +1,27 @@
 <?php
 session_start();
+if(!(isset($_SESSION["loggedin"] ))){
+header("location: login.php");
+}
 
 require_once "config.php";
+$user = $_SESSION["username"];
 
-$sql = "SELECT fname FROM folders";
+if(isset($_POST["folderName"])) {
+	$folderName = $_POST["folderName"];
+	$insertFolder = "SELECT fname FROM folders WHERE user ='$user' AND fname='$folderName'";
+	$dontInsertFolder = mysqli_query($link, $insertFolder);
+	if(mysqli_num_rows($dontInsertFolder) == 0) {
+		 $folderI = "INSERT into folders values ('$user', '$folderName');";
+		 if(mysqli_query($link, $folderI)){
+			 } else {
+				 echo "Error, inserting Folder failed" .$folderI ;
+			 }
+	 }
+ } 
+	 
+$sql = "SELECT fname FROM folders WHERE user ='$user'";
     $result = mysqli_query($link, $sql);
-
 ?>
 
 
@@ -162,6 +178,45 @@ body {
   font-size: 18px;
   color: white; 
 }
+
+/* Folder Creation Modal Block */
+.folderForm {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 10px; /* Location of the box */
+  left: 400;
+  top: 0;
+  width: 40%; /* Full width */
+  height: 40%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  
+}
+
+/* Folder Creation Content */
+.folderText {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 100%;
+}
+
+/* Folder Creation Close Button */
+.folderModalClose {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.folderModalClose:hover,
+.folderModalClose:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 /* Pre is used to get rid of whitespace in code snippets */
 pre{
 white-space: pre;
@@ -187,7 +242,8 @@ footer {
   <a href="#contact">Contact</a>
   <a href="#about">About</a>
 <!-- Right floating buttons -->
-  <b href="#settings">Settings</b>
+  <b href="#settings" >Settings</b>
+  <a href="logout.php">Logout</a>
 </div>
 <!-- End top navigation bar-->
 
@@ -195,17 +251,21 @@ footer {
 <div class="row">
 
 <div class="left"><!--This is the left flex, which contains the folders and searchbar -->
+
 <div class="fileMenu">Files
 <input type="text" id="search" onkeyup = "searchbar()" placeholder="Search..">
+<button onclick="document.getElementById('folderModal').style.display='block'" id="folderModalButton">New Folder...</button>
 </div>
 
 <?php
+     $arrayParm=array();
+     $arrayFetta=array();	
  if (mysqli_num_rows($result) > 0) { //If there are rows in the original Mysql query, then set up arrays and find the files
       $arraye = array();
       $arraya = array();
       $folderJson = array(array());
-      $arrayParm = array();
-      $arrayFetta = array();
+     // $arrayParm = array();
+     // $arrayFetta = array();
       $b = 0;
       /*While there are Folders in the row, get the information from them. */
       while($row = mysqli_fetch_assoc($result)) {
@@ -219,8 +279,7 @@ footer {
 <button class="accordion"><?php echo $param_Tname ?> </button>
 <div class ="panel2">
 <div class="tab">
-<?php
-	
+<?php	
         if (mysqli_num_rows($result2) > 0) {
         while($row = mysqli_fetch_assoc($result2)) {
 	/* These are the arrays that we use to create buttons with */ 
@@ -298,6 +357,19 @@ for($i = 0; $i < count($arrayParm); $i++){
 </div>
 </div>
 
+</div>
+	<!-- Folder Creation Content -->
+<div id="folderModal" class="folderForm">
+    <span onclick="document.getElementById('folderModal').style.display='none'" class="folderModalClose">&times;</span>
+	<div class="folderText">
+	<form action="homepage.php" method="post">
+		
+		<input type="text" name="folderName" placeholder="Folder Name">
+		<br>
+		<br>
+		<input type="submit" value="Submit">
+		</form> 
+	</div>
 </div>
 <script>
 //Accordion script
