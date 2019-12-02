@@ -13,27 +13,21 @@ require_once "config.php";
 
 // Define variables and initialize with empty values
 $username = $password = "";
-$username_err = $password_err = "";
+$username_err = "";
+$password_err = "";
 // temp variable for if statments below because of error
-$usercheck = isset($_POST["username"]);
-$passcheck = isset($_POST["password"]);
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Check if username is empty
-    if(!$usercheck){
-        $username_err = "Please enter username.";
-    } else{
-        $username = trim($_POST["username"]);
-    }
-
+    $username_err = "Please enter username.";
+    $username = trim($_POST["username"]);
     // Check if password is empty
-    if(!$passcheck){
-        $password_err = "Please enter your password.";
-    } else{
-        $password = trim($_POST["password"]);
-    }
+    $password_err = "Please enter your password.";
+    $password = trim($_POST["password"]);
     // Validate credentials
-    if(empty($username_err) && empty($password_err)){
+    if($password != "" && $username != ""){
+		$username_err = "";
+        $password_err = ""; 
         // Prepare a select statement
         $sql = "SELECT username FROM users WHERE username = '$username' and password = '$password'";
 

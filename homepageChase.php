@@ -475,9 +475,7 @@ for (i = 0; i < acc.length; i++) {
 	while closing all of the other file's contents
 */
 function openFile(evt, fileName) {
-  var i, tabcontent, tablinks, rName;
-  console.log("hi buddy");
-  console.log(fileName);
+  var i, tabcontent, tablinks;
   tabcontent = document.getElementsByClassName("tabcontent");
   for (i = 0; i < tabcontent.length; i++) {
     tabcontent[i].style.display = "none";
