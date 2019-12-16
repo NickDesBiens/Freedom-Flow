@@ -13,23 +13,31 @@ require_once "config.php";
 
 // Define variables and initialize with empty values
 $username = $password = "";
-$username_err = "";
-$password_err = "";
+$username_err = $password_err = "";
 // temp variable for if statments below because of error
+$usercheck = isset($_POST["username"]);
+$passcheck = isset($_POST["password"]);
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Check if username is empty
-    $username_err = "Please enter username.";
-    $username = trim($_POST["username"]);
+    if(!$usercheck){
+        $username_err = "Please enter username.";
+    } else{
+        $username = trim($_POST["username"]);
+    }
+
     // Check if password is empty
-    $password_err = "Please enter your password.";
-    $password = trim($_POST["password"]);
+    if(!$passcheck){
+        $password_err = "Please enter your password.";
+    } else{
+        $password = trim($_POST["password"]);
+        $salted = "njuldzerhiuorfn;f".$password."xnipesrfhiofre";
+        $hashed_password = hash('freedom', $salted);
+    }
     // Validate credentials
-    if($password != "" && $username != ""){
-		$username_err = "";
-        $password_err = ""; 
+    if(empty($username_err) && empty($password_err)){
         // Prepare a select statement
-        $sql = "SELECT username FROM users WHERE username = '$username' and password = '$password'";
+        $sql = "SELECT username FROM users WHERE username = '$username' and password = '$hashed_password'";
 
 		$stmt = mysqli_prepare($link, $sql);
 
@@ -58,7 +66,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                         // Store data in session variables
                         $_SESSION["loggedin"] = true;
                         $_SESSION["username"] = $username;
-                        $_SESSION["password"] = $password;
+                        $_SESSION["password"] = $hashed_password;
 
                         // Redirect user to welcome page
                         header("location: homepage.php");

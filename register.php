@@ -56,11 +56,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 //Check if username exists, if yes then verify password
                 if(mysqli_stmt_num_rows($stmt) == 0){
 
-                    if(($password == $confirm) && $password != ""){
+                    if(($password == $confirm)){
 
                         // Password is correct, so start a new session
                         session_start();
-                        $sql = "Insert into users values('$username','$password')";
+                        $salted = "njuldzerhiuorfn;f".$password."xnipesrfhiofre";
+                        $hashed_password = hash('freedom', $salted);
+                        $sql = "Insert into users values('$username','$hashed_password')";
                         $stmt = mysqli_prepare($link, $sql);
                         mysqli_stmt_execute($stmt);
 
@@ -69,14 +71,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                     } else {
                         // Display an error message if password is not valid
-                        if($password == "")
-                        {
-							$password_err = "Must have something for password";
-						}
-						else
-						{
-                            $confirm_err = "The passwords are not the same";
-					    }
+                        $confirm_err = "The passwords are not the same";
                     }
                 } else {
                   $username_err = "Someone else already has this username.";

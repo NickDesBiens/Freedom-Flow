@@ -1,25 +1,55 @@
 <?php
 session_start();
-if(!(isset($_SESSION["loggedin"] ))){
-header("location: login.php");
-}
+
 
 require_once "config.php";
 $user = $_SESSION["username"];
 
 if(isset($_POST["folderName"])) {
-	$folderName = $_POST["folderName"];
-	$insertFolder = "SELECT fname FROM folders WHERE user ='$user' AND fname='$folderName'";
-	$dontInsertFolder = mysqli_query($link, $insertFolder);
-	if(mysqli_num_rows($dontInsertFolder) == 0) {
-		 $folderI = "INSERT into folders values ('$user', '$folderName');";
-		 if(mysqli_query($link, $folderI)){
-			 } else {
+	if(isset($_POST["delete"])) {
+		//If Delete Is Submitted
+		$delFolderName = $_POST["folderName"];
+			if(isset($_POST["fileName"])) {
+				//Delete Just A File in the Folder
+				$delFileName = $_POST["fileName"];
+				$deleteFile = "DELETE FROM files WHERE user ='$user' AND name= '$delFileName' AND fname ='$delFolderName'";
+				mysqli_query($link, $deleteFile);
+			} else {
+				//Delete The Whole Folder
+			$deleteFolder = "DELETE FROM folders WHERE user ='$user' AND fname ='$delFolderName'";
+			$deleteFilesInFolder = "DELETE FROM files WHERE user='$user' AND fname='$delFolderName'";
+			mysqli_query($link, $deleteFolder);
+			mysqli_query($link, $deleteFilesInFolder);
+		}
+	} else {
+		$folderName = $_POST["folderName"];
+		//Create File If FileName is Present, and File does not already exist
+		if(isset($_POST["fileName"])){
+			$fileName = $_POST["fileName"];
+			$fileDesc = $_POST["fileDesc"];
+			$fileSnippit = $_POST["fileSnippit"];
+			$fileColor = $_POST["fileColor"];
+			$insertFile = "INSERT INTO files values('$fileName', '$user', '$fileDesc', '$fileSnippit', '$folderName', '$fileColor', 0, 3)";
+			$dontInsertFile = "SELECT name FROM files WHERE name='$fileName' AND user='$user' AND fname='$folderName'";
+			$checkInsertFile = mysqli_query($link, $dontInsertFile);
+			if(mysqli_num_rows($checkInsertFile) == 0) {
+				mysqli_query($link, $insertFile);
+			}
+			} else {
+			//Create new folder if folder does not already exist
+			$insertFolder = "SELECT fname FROM folders WHERE user ='$user' AND fname='$folderName'";
+			$dontInsertFolder = mysqli_query($link, $insertFolder);
+			if(mysqli_num_rows($dontInsertFolder) == 0) {
+				$folderI = "INSERT into folders values ('$user', '$folderName');";
+				if(mysqli_query($link, $folderI)){
+				} else {
 				 echo "Error, inserting Folder failed" .$folderI ;
-			 }
-	 }
- } 
-	 
+				}
+			}
+			}
+ }
+} 
+
 $sql = "SELECT fname FROM folders WHERE user ='$user'";
     $result = mysqli_query($link, $sql);
 ?>
@@ -76,10 +106,75 @@ $sql = "SELECT fname FROM folders WHERE user ='$user'";
   font-size: 17px;
 }
 
-.topnav b:hover {
-  background-color: #6EA4BF;
-  color: black;
+/* Navbar container */
+.navbar {
+  overflow: hidden;
+  background-color: #333;
 }
+
+/* Links inside the navbar */
+.navbar a {
+  float: left;
+  font-size: 17px;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+/* The dropdown container */
+.dropdown {
+  float: left;
+  overflow: hidden;
+}
+
+/* Dropdown button */
+.dropdown .dropbtn {
+  font-size: 16px;
+  border: none;
+  outline: none;
+  color: white;
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit; /* Important for vertical align on mobile phones */
+  margin: 0; /* Important for vertical align on mobile phones */
+}
+
+/* Add a red background color to navbar links on hover */
+.navbar a:hover, .dropdown:hover .dropbtn {
+  background-color: red;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+/* Add a grey background color to dropdown links on hover */
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
 /* Style the tab */
 .tab {
   float: left;
@@ -116,7 +211,7 @@ $sql = "SELECT fname FROM folders WHERE user ='$user'";
 
 /* Style the tab content */
 .tabcontent {
-  float: left; 
+  float: left;
   border 2px solid #ECFEE8
   width: 100%;
   border-left:none;
@@ -139,7 +234,7 @@ $sql = "SELECT fname FROM folders WHERE user ='$user'";
 
 .active, .accordion:hover {
   background-color: #41337A;
-  color: #ECFEE8; 
+  color: #ECFEE8;
 }
 /*Define the styling of a panel */
 .panel {
@@ -171,13 +266,21 @@ body {
   color: gray;
 }
 
+/*Style the folder/file buttons*/
+.fButton {
+	background-color: #f2f2f2;
+	text-align: center;
+	font-size: 12px;
+	color: gray;
+}
+
 /* Style the fileMenu */
 .fileMenu{
  background-color: #4E0066;
   padding: 18px;
   text-align: Left;
   font-size: 18px;
-  color: white; 
+  color: white;
 }
 
 /* Folder Creation Modal Block */
@@ -191,7 +294,7 @@ body {
   width: 40%; /* Full width */
   height: 40%; /* Full height */
   overflow: auto; /* Enable scroll if needed */
-  
+
 }
 
 /* Folder Creation Content */
@@ -223,37 +326,41 @@ body {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
-  padding-top: 10px; /* Location of the box */
+  padding-top: 50px; /* Location of the box */
   left: 400;
-  top: 0;
-  width: 40%; /* Full width */
-  height: 40%; /* Full height */
+  top: 100;
+  width: 20%; /* Full width */
+  height: 50%; /* Full height */
   overflow: auto; /* Enable scroll if needed */
-  
-}
-
-/* File Creation Content */
-.fileText {
   background-color: #fefefe;
-  margin: auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 100%;
 }
 
-/* File Creation Close Button */
-.fileModalClose {
-  color: #aaaaaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+/* File Deletion Modal Block */
+.deleteFileForm {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 50px; /* Location of the box */
+  left: 1100;
+  top: 150;
+  width: 20%; /* Full width */
+  height: 30%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: #fefefe;
 }
 
-.fileModalClose:hover,
-.fileModalClose:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
+/* Folder Deletion Modal Block */
+.deleteFolderForm {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 50px; /* Location of the box */
+  left: 1100;
+  top: 150;
+  width: 20%; /* Full width */
+  height: 20%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: #fefefe;
 }
 
 /* Pre is used to get rid of whitespace in code snippets */
@@ -281,9 +388,20 @@ footer {
   <a href="#contact">Contact</a>
   <a href="#about">About</a>
 <!-- Right floating buttons -->
-  <b href="#settings" >Settings</b>
-  <a href="logout.php">Logout</a>
+  <!-- <b href="#settings" >Settings</b> -->
+	<div class="dropdown">
+	    <button class="dropbtn">Settings
+	      <i class="fa fa-caret-down"></i>
+	    </button>
+	    <div class="dropdown-content">
+	      <a href="#">Change Theme</a>
+	      <a href="logout.php">Logout</a>
+	      <!-- <a href="#">Link 3</a> -->
+	    </div>
+	  </div>
+  <!-- <a href="logout.php" >Logout</a> -->
 </div>
+
 <!-- End top navigation bar-->
 
 <!-- Begin the row and flex elements -->
@@ -293,42 +411,47 @@ footer {
 
 <div class="fileMenu">Files
 <input type="text" id="search" onkeyup = "searchbar()" placeholder="Search..">
-<button onclick="document.getElementById('folderModal').style.display='block'" id="folderModalButton">New Folder...</button>
+<br>
+<button class="fButton" onclick="document.getElementById('folderModal').style.display='block'" id="folderModalButton">New Folder...</button>
 </div>
 
 <?php
      $arrayParm=array();
-     $arrayFetta=array();	
+		 $arrayChed=array(); // cheese array for snippit description
+     $arrayFetta=array();
  if (mysqli_num_rows($result) > 0) { //If there are rows in the original Mysql query, then set up arrays and find the files
       $arraye = array();
+			$arrayd = array(); // array for snippit description
       $arraya = array();
       $folderJson = array(array());
      // $arrayParm = array();
      // $arrayFetta = array();
       $b = 0;
-      /* While there are Folders in the row, get the information from them. */
+      /*While there are Folders in the row, get the information from them. */
       while($row = mysqli_fetch_assoc($result)) {
         $param_Tname = $row["fname"];
-        $sql1 = "SELECT name, snippit, recent from files where fname = '$param_Tname'";
+        $sql1 = "SELECT name, description, snippit, recent from files where fname = '$param_Tname'";
         $result2 = mysqli_query($link, $sql1);
         if($result2 != false){
         $a = 0;
 ?>
 <!-- Create the folder acordion -->
-<button class="accordion"><?php echo $param_Tname ?> </button>
-<div class ="panel2">
+<button class="accordion" onclick="setFolder(this.innerHTML);"><?php echo $param_Tname ?> </button>
+<div class ="panel2" data-value=<?php echo $param_Tname; ?>>
 <div class="tab">
-<?php	
+<?php
         if (mysqli_num_rows($result2) > 0) {
         while($row = mysqli_fetch_assoc($result2)) {
-	/* These are the arrays that we use to create buttons with */ 
+	/* These are the arrays that we use to create buttons with */
 	$arraye[$a] = $row["name"];
-	$arraya[$a] = $row["snippit"]; 
+	$arrayd[$a] = $row["description"];
+	$arraya[$a] = $row["snippit"];
 	/* These are cheese arrays I am using to avoid problems */
 	$arrayParm[$b] = $row["name"];
+	$arrayChed[$b] = $row["description"];
 	$arrayFetta[$b] = $row["snippit"];
 //	if( //tHe array where I am trying to store data does not exits
-	
+
 	/* Work in progress to try and use JSON */
 	if(! (isset($incomingFolder))){
 	$incomingFolder = array($param_Tname => array('filename' => $row["name"], 'snippit' => $row["snippit"] ));
@@ -337,31 +460,31 @@ footer {
 	$tempArray = array($param_Tname => array('filename' => $row["name"], 'snippit' => $row["snippit"] ));
 	$incomingFolder[$param_Tname][$a] = $tempArray;
 	/* Work in progess to use JSON*/
-	}	
+	}
 	/* Create the buttons to be called by openFile */
 	$taxes = "'";
 	$str = htmlentities($row["name"]);
 	if($row["recent"] > 0){
-        echo'<button class="tablinks" onclick="openFile(event, '.$taxes.$str.$b.$taxes.')" id="defaultOpen">'.$row["name"].' </button>';  /* Here the variable $b is to avoid non-unique names */
+        echo'<button class="tablinks" onclick="openFile(event, '.$taxes.$str.$b.$taxes.'); setFile(this.innerHTML)" id="defaultOpen">'.$row["name"].' </button>';  /* Here the variable $b is to avoid non-unique names */
  	}else{
 	 echo'<button class="tablinks" onclick="openFile(event, '.$taxes.$str.$b.$taxes.')">'.$row["name"].' </button>';
-	
+
 	}
-	$a++; 
+	$a++;
 	$b++;
         }
 	//More JSOn
 	$folderJson = array_merge($folderJson, $incomingFolder);
       }
 	}
-?>	
-<!-- Examples of how to create buttons for reference -->	
+?>
+<!-- Examples of how to create buttons for reference -->
  <!-- <button class="tablinks" onclick="openCity(event, 'Forloop')" id="defaultOpen">Forloop</button>
   <button class="tablinks" onclick="openCity(event, 'Quicksort')">Quicksort</button>
   <button class="tablinks" onclick="openCity(event, 'Array')">Array</button> -->
 </div>
 </div>
-<?php 
+<?php
 }
 }
 // json_encode($folderJson);
@@ -370,23 +493,31 @@ footer {
 
 
 <!--
-Example of how to create an accordion for reference 
+Example of how to create an accordion for reference
 <button class="accordion">File 2</button>
 <div class="panel">
 </div>-->
 
-<!-- End left flex and mvoe to right side of the screen -->
+<!-- End left flex and move to right side of the screen -->
 <div class="right">
 <div class = "header">
 <h2>FreedomFlow</h2>
 </div>
+
+<!-- These Buttons Open the Confirm Deletion Box, Top One for Deleting Files and Bottom for Deleting Whole Folders -->
+<button class="fButton" onclick="document.getElementById('deleteFileModal').style.display='block'; document.getElementById('deleteFolderModal').style.display='none'" id="fileDeleteButton">Delete File</button>
+<button class="fButton" onclick="document.getElementById('deleteFolderModal').style.display='block'; document.getElementById('deleteFileModal').style.display='none'" id="folderDeleteButton">Delete Folder</button>
+<button class="fButton" onclick="document.getElementById('fileModal').style.display='block'" id="fileCreateButton">Create File</button>
 <?php
-//For each folder in the array 
+//For each folder in the array
 for($i = 0; $i < count($arrayParm); $i++){
 ?>
 <!-- make the content -->
 <div id = <?php echo $arrayParm[$i].$i; ?> class="tabcontent">
-<h3><?php echo $arrayParm[$i]; ?></h3> 
+<h3><?php echo $arrayParm[$i]; ?></h3>
+<p>
+	 <?php echo $arrayChed[$i]; ?>
+</p>
 <pre>
    <?php echo $arrayFetta[$i];?>
 </pre>
@@ -402,12 +533,42 @@ for($i = 0; $i < count($arrayParm); $i++){
     <span onclick="document.getElementById('folderModal').style.display='none'" class="folderModalClose">&times;</span>
 	<div class="folderText">
 	<form action="homepage.php" method="post">
-		
+
 		<input type="text" name="folderName" placeholder="Folder Name">
 		<br>
 		<br>
 		<input type="submit" value="Submit">
-		</form> 
+		</form>
+	</div>
+</div>
+
+<!-- Folder Deletion Content -->
+<div id="deleteFolderModal" class="deleteFolderForm">
+	<span onclick="document.getElementById('deleteFolderModal').style.display='none'" class="fileModalClose">&times;</span>
+	<div class="fileText">
+	<b>Are you sure you want to delete?</b>
+	<form id="delete" action="homepage.php" method="post">
+	<input type="hidden" name="delete" value="delete">
+	<input type="hidden" id="delFolderName" name="folderName" value="">
+	<input type="submit" value="Confirm Delete">
+	</form>
+	</div>
+</div>
+
+<!-- File Deletion Content -->
+<div id="deleteFileModal" class="deleteFileForm">
+	<span onclick="document.getElementById('deleteFileModal').style.display='none'" class="fileModalClose">&times;</span>
+	<div class="fileText">
+	<b>Are you sure you want to delete?</b>
+	<form id="delete" action="homepage.php" method="post">
+	<input type="hidden" name="delete" value="delete">
+	<br>
+	<input type="text" id="delFolderNameOther" name="folderName" value="">
+	<br>
+	<input type="text" id="delFileName" name="fileName" value="">
+	<br>
+	<input type="submit" value="Confirm Delete">
+	</form>
 	</div>
 </div>
 
@@ -416,18 +577,22 @@ for($i = 0; $i < count($arrayParm); $i++){
 	<span onclick="document.getElementById('fileModal').style.display='none'" class="fileModalClose">&times;</span>
 	<div class="fileText">
 	<form action="homepage.php" method="post">
-	<input type="text" name="fileName" placeholder="File Name">
+	<input type="text" name="fileName" placeholder="File Name...">
 	<br>
 	<input style="height:50px;" type="text" name="fileDesc" placeholder="Description...">
 	<br>
 	<input style="height:200px;" type="text" name="fileSnippit" placeholder="Enter your code here...">
+	<br>
+	<input type="text" name="fileColor" placeholder="Enter color... (ex: aabbcc)">
+	<input type="text" id="folderName" name="folderName" value="">
 	<input type="submit" value="Submit">
-	
 	</form>
-	
-	
 	</div>
 </div>
+
+
+
+
 <script>
 //Accordion script
 var acc = document.getElementsByClassName("accordion");
@@ -446,10 +611,10 @@ for (i = 0; i < acc.length; i++) {
 }
 /* Function openFile
 	takes in a filename and opens that file's content
-	while closing all of the other file's contents 
+	while closing all of the other file's contents
 */
 function openFile(evt, fileName) {
-  var i, tabcontent, tablinks;
+  var i, tabcontent, tablinks, rName;
   tabcontent = document.getElementsByClassName("tabcontent");
   for (i = 0; i < tabcontent.length; i++) {
     tabcontent[i].style.display = "none";
@@ -460,6 +625,8 @@ function openFile(evt, fileName) {
   }
   document.getElementById(fileName).style.display = "block";
   evt.currentTarget.className += " active";
+  rName = evt.currentTarget.innerHTML;
+  var sql = "UPDATE files WHERE username = '$username' and password = '$password'";
 }
 
 // Get the element with id="defaultOpen" and click on it
@@ -490,10 +657,10 @@ function searchbar() {
   //  console.log(a.innerHTML.toUpperCase());
         if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
           console.log("we good " + a.innerHTML);
-          li[i].style.display = "block"; 
-	  count++; 
-	} else { 
-	  li[i].style.display = "none";  
+          li[i].style.display = "block";
+	  count++;
+	} else {
+	  li[i].style.display = "none";
 	}
       }
       if( count > 0){
@@ -503,11 +670,31 @@ function searchbar() {
       } else{
 	  if(ul[j].previousElementSibling.classList.contains("active")){
 	   ul[j].previousElementSibling.click();
-          }	
+          }
 	}
   }
 }
 
+//Folder and File Deletion Variables/Scripts
+
+
+function setFile(file) {
+	var fileName = file;
+	document.getElementById("delFileName").value = fileName;
+}
+
+function setFolder(folder) {
+	var folderName = folder;
+	document.getElementById("folderName").value = folderName;
+	document.getElementById("delFolderName").value = folderName;
+	document.getElementById("delFolderNameOther").value = folderName;
+}
+
+
+
+
 </script>
+
+
 </body>
 </html>
